@@ -1,0 +1,11 @@
+<footer class="page-footer">
+    <ul class="page-footer_bar">
+        <li>
+            <a href="<c:url value='/modules/jahia-super-tools/index.jsp'/>"><span class="material-symbols-outlined">home</span>Super Tools</a>
+            <a href="<c:url value='/modules/tools/index.jsp'/>"><span class="material-symbols-outlined">construction</span>Support Tools</a>
+        </li>
+        <li>
+            <a href='${pageContext.request.contextPath}/cms/logout?redirect=${pageContext.request.contextPath}/start'><span
+                    class="material-symbols-outlined">logout</span>Logout</a></li>
+    </ul>
+</footer>

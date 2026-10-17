@@ -1,0 +1,42 @@
+{
+  "name": "@jahia/jahia-super-tools",
+  "version": "0.0.1",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "React front-ends of the Jahia Super Tools module (cache browser, JCR browser)",
+  "scripts": {
+    "build": "webpack --mode=development",
+    "build:production": "webpack --mode=production",
+    "watch": "webpack --mode=development --watch",
+    "lint": "eslint --ext js,jsx src/javascript",
+    "lint:fix": "eslint --ext js,jsx --fix src/javascript",
+    "clean": "rimraf src/main/resources/javascript/apps"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.13.8",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.5",
+    "@mui/material": "^7.3.5",
+    "@mui/x-tree-view": "^8.21.0",
+    "graphql": "^16.11.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "babel-loader": "^9.2.1",
+    "clean-webpack-plugin": "^4.0.0",
+    "css-loader": "^6.11.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "rimraf": "^5.0.10",
+    "style-loader": "^3.3.4",
+    "webpack": "^5.101.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "packageManager": "yarn@1.22.22"
+}

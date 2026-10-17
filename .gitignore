@@ -1,0 +1,14 @@
+/target/
+/node/
+/node_modules/
+/src/main/resources/javascript/apps/
+/.idea/
+*.iml
+/.classpath
+/.project
+/.settings/
+*.log
+.DS_Store
+
+# local security review notes, not published
+/vulnerabilities.md

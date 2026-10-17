@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+        version="2.1">
+
+    <description>Jahia Super Tools tag library</description>
+    <display-name>Jahia Super Tools</display-name>
+    <tlib-version>1.0</tlib-version>
+    <short-name>supertools</short-name>
+    <uri>http://www.jahia.org/tags/supertools</uri>
+    <tag>
+        <description>Enforces that the connected user holds systemToolsAccess on /tools; sends 403 and aborts the page
+            otherwise. Must be the first executable statement of every tool JSP.</description>
+        <name>requireToolsAccess</name>
+        <tag-class>org.jahia.community.supertools.taglibs.RequireToolsAccessTag</tag-class>
+        <body-content>empty</body-content>
+    </tag>
+</taglib>

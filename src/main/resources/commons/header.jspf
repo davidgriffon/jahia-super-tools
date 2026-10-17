@@ -1,0 +1,22 @@
+<%@ page import="org.jahia.settings.SettingsBean" %>
+<% pageContext.setAttribute("jahiaEnv", SettingsBean.getInstance().getString("jahia.environment", "")); %>
+<header class="page-header">
+    <ul class="page-header_bar">
+        <li>
+            <a href="<c:url value='/modules/jahia-super-tools/index.jsp'/>"><span class="material-symbols-outlined">home</span>Super Tools</a>
+            <a href="<c:url value='/modules/tools/index.jsp'/>"><span class="material-symbols-outlined">construction</span>Support Tools</a>
+        </li>
+        <li>
+            <a href='${pageContext.request.contextPath}/cms/logout?redirect=${pageContext.request.contextPath}/start'><span
+                    class="material-symbols-outlined">logout</span>Logout</a></li>
+    </ul>
+    <hgroup>
+        <h1>${title}</h1>
+        ${description} <c:if test="${not empty jahiaEnv}"> jahia.environment: <strong><c:out value="${jahiaEnv}"/></strong></c:if>
+    </hgroup>
+    <c:if test="${! empty headerActions}">
+        <ul class="page-header_toolbar">
+            ${headerActions}
+        </ul>
+    </c:if>
+</header>

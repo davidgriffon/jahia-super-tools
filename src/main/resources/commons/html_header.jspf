@@ -1,0 +1,6 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="robots" content="noindex, nofollow" />
+<title>${title}</title>
+<link rel="stylesheet" href="<c:url value='/modules/jahia-super-tools/css/reset.css'/>" type="text/css" />
+<link rel="stylesheet" href="<c:url value='/modules/jahia-super-tools/css/google_material.css'/>" type="text/css" />
+<link rel="stylesheet" href="<c:url value='/modules/jahia-super-tools/css/supertools.css'/>" type="text/css" />

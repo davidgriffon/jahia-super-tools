@@ -187,10 +187,12 @@ updates the changelog **before** `mvn release:prepare`, so the section is inside
 
 3. Commit, then run `mvn release:prepare` and `mvn release:perform`. The tag `v1.2.0` holds the
    section above, and the store renders it as the release notes of version 1.2.0.
-4. Attach the jar to the GitHub release of the tag, under the name
-   `jahia-super-tools-1.2.0.jar`, because `artifact` in `STORE.md` points at
-   `https://github.com/davidgriffon/jahia-super-tools/releases/download/v1.2.0/jahia-super-tools-1.2.0.jar`.
-   GitHub Packages needs a token even for a public package, so the store serves the release asset.
+4. Nothing else to upload: `artifact` in `STORE.md` points at the jar that `release:perform` deployed to
+   GitHub Packages,
+   `https://maven.pkg.github.com/davidgriffon/jahia-super-tools/org/jahia/community/jahia-super-tools/1.2.0/jahia-super-tools-1.2.0.jar`.
+   GitHub Packages requires a GitHub token to download, even for a public package: the store or the
+   person installing the module must present one (`Authorization: Bearer <token>` with the
+   `read:packages` scope).
 
 A heading written as `## 1.2.0` or `## v1.2.0` is read too. A version with no section lists in the
 store without release notes.

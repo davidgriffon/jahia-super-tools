@@ -2,7 +2,7 @@
 name: jahia-super-tools
 groupId: org.jahia.community
 title: Jahia Super Tools
-artifact: https://github.com/davidgriffon/jahia-super-tools/releases/download/v{version}/jahia-super-tools-{version}.jar
+artifact: https://maven.pkg.github.com/davidgriffon/jahia-super-tools/org/jahia/community/jahia-super-tools/{version}/jahia-super-tools-{version}.jar
 license: Apache-2.0
 author: David Griffon
 authorUrl: https://github.com/davidgriffon/jahia-super-tools

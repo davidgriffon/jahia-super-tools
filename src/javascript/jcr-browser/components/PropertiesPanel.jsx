@@ -1,10 +1,20 @@
 import {useMemo, useState} from 'react';
 import {Box, Chip, FormControlLabel, IconButton, InputAdornment, Link, Paper, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip, Typography} from '@mui/material';
-import {Delete as DeleteIcon, Edit as EditIcon, Lock as ProtectedIcon, Search as SearchIcon} from '@mui/icons-material';
+import {ContentCopy as CopyIcon, Delete as DeleteIcon, Edit as EditIcon, Lock as ProtectedIcon, Search as SearchIcon} from '@mui/icons-material';
 import {REFERENCE_TYPES, compareNames, propertyValues} from '../utils';
-import {formatBytes, formatDate} from '../../shared/format';
+import {copyToClipboard, formatBytes, formatDate} from '../../shared/format';
 
 const MAX_INLINE = 300;
+
+function CopyButton({text, title, testId, onCopied}) {
+    return (
+        <Tooltip title={title}>
+            <IconButton size="small" className="st-copy" sx={{p: 0.25, ml: 0.5}} data-testid={testId} onClick={() => copyToClipboard(text).then(() => onCopied(text))}>
+                <CopyIcon sx={{fontSize: 14}}/>
+            </IconButton>
+        </Tooltip>
+    );
+}
 
 function Value({property, value, onNavigate}) {
     const [expanded, setExpanded] = useState(false);
@@ -32,7 +42,7 @@ function Value({property, value, onNavigate}) {
     return <span>{text}</span>;
 }
 
-export default function PropertiesPanel({properties, locked, onEdit, onRemove, onNavigate}) {
+export default function PropertiesPanel({properties, locked, onEdit, onRemove, onNavigate, onCopied}) {
     const [search, setSearch] = useState('');
     const [sorted, setSorted] = useState(false);
     const list = useMemo(() => {
@@ -68,6 +78,7 @@ export default function PropertiesPanel({properties, locked, onEdit, onRemove, o
                                 <TableCell sx={{wordBreak: 'break-all'}}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap'}}>
                                         <Typography variant="body2" fontWeight={600} sx={{fontFamily: 'monospace'}}>{property.name}</Typography>
+                                        <CopyButton text={property.name} title="Copy property name" testId="jcr-property-copy-name" onCopied={onCopied}/>
                                         {definition?.mandatory && <Tooltip title="Mandatory"><Typography component="span" color="error.main">*</Typography></Tooltip>}
                                         {property.protected && <Tooltip title="Protected: managed by the repository, read only"><ProtectedIcon sx={{fontSize: 14, color: 'text.secondary'}} data-testid="jcr-property-protected"/></Tooltip>}
                                         {definition?.autoCreated && <Chip label="autocreated" size="small" variant="outlined" sx={{height: 18}}/>}
@@ -87,10 +98,18 @@ export default function PropertiesPanel({properties, locked, onEdit, onRemove, o
                                             {values.map((value, index) => (
                                                 // Values of a multi-valued property can repeat, the index is the only stable key.
                                                 // eslint-disable-next-line react/no-array-index-key
-                                                <li key={index}><Value property={property} value={value} onNavigate={onNavigate}/></li>
+                                                <li key={index}>
+                                                    <Value property={property} value={value} onNavigate={onNavigate}/>
+                                                    {!binary && <CopyButton text={String(value)} title="Copy value" testId="jcr-property-copy-value" onCopied={onCopied}/>}
+                                                </li>
                                             ))}
                                         </Box>
-                                    ) : <Value property={property} value={values[0]} onNavigate={onNavigate}/>}
+                                    ) : (
+                                        <>
+                                            <Value property={property} value={values[0]} onNavigate={onNavigate}/>
+                                            {!binary && <CopyButton text={String(values[0])} title="Copy value" testId="jcr-property-copy-value" onCopied={onCopied}/>}
+                                        </>
+                                    )}
                                 </TableCell>
                                 <TableCell align="right">
                                     <Tooltip title={readOnly ? 'Read only' : 'Edit'}>

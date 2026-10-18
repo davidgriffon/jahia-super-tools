@@ -1,6 +1,6 @@
 {
   "name": "@jahia/jahia-super-tools",
-  "version": "0.0.1",
+  "version": "0.0.1-SNAPSHOT",
   "private": true,
   "license": "Apache-2.0",
   "description": "React front-ends of the Jahia Super Tools module (cache browser, JCR browser)",

@@ -22,12 +22,15 @@ import org.jahia.services.content.decorator.JCRUserNode;
 import org.jahia.services.usermanager.JahiaUser;
 import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.jahia.utils.LanguageCodeConverters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.Locale;
 
 /**
@@ -169,11 +172,22 @@ public final class JcrSessions {
         }
     }
 
-    public static DataFetchingException fail(RepositoryException e) {
-        return new DataFetchingException(e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+    private static final Logger logger = LoggerFactory.getLogger(JcrSessions.class);
+
+    /**
+     * Turns a repository failure into a client error that names the JCR exception type (the information an
+     * administrator acts on: {@code PathNotFoundException}, {@code LockException}, {@code AccessDeniedException}...)
+     * but not its message, which can carry internal paths or configuration. The full exception goes to the server
+     * log under a reference quoted in the client message.
+     */
+    public static DataFetchingException fail(Exception e) {
+        return fail(null, e);
     }
 
-    public static DataFetchingException fail(String context, RepositoryException e) {
-        return new DataFetchingException(context + ": " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+    public static DataFetchingException fail(String context, Exception e) {
+        String reference = UUID.randomUUID().toString();
+        logger.warn("JCR Explorer failure (reference {}){}", reference, context == null ? "" : ": " + context, e);
+        String message = e.getClass().getSimpleName() + " (see the server log, reference " + reference + ")";
+        return new DataFetchingException(context == null ? message : context + ": " + message);
     }
 }

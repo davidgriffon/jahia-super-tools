@@ -72,10 +72,10 @@ public class SuperToolsJcrNodeMutation {
         try {
             T result = operation.run();
             session.save();
-            audit.info("JCR browser: {} did '{}' on {} ({})", context.getActor(), what, path, context.describe());
+            audit.info("JCR Explorer: {} did '{}' on {} ({})", context.getActor(), what, path, context.describe());
             return result;
         } catch (RepositoryException | RuntimeException e) {
-            audit.warn("JCR browser: {} failed '{}' on {} ({}): {}", context.getActor(), what, path, context.describe(), e.toString());
+            audit.warn("JCR Explorer: {} failed '{}' on {} ({}): {}", context.getActor(), what, path, context.describe(), e.toString());
             try {
                 session.refresh(false);
             } catch (RepositoryException ignored) {
@@ -84,7 +84,7 @@ public class SuperToolsJcrNodeMutation {
             if (e instanceof DataFetchingException) {
                 throw (DataFetchingException) e;
             }
-            throw new DataFetchingException(what + " failed: " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+            throw JcrSessions.fail(what + " failed", e);
         }
     }
 

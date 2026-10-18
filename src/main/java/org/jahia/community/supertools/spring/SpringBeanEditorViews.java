@@ -50,6 +50,7 @@ public final class SpringBeanEditorViews {
             context.put("id", info.getId());
             context.put("label", info.getLabel());
             context.put("beanCount", info.getBeanCount());
+            context.put("editable", SpringBeanEditorHelper.CORE_CONTEXT_ID.equals(info.getId()));
             context.put("persistable", SpringBeanEditorHelper.CORE_CONTEXT_ID.equals(info.getId()));
             contexts.add(context);
         }
@@ -158,6 +159,9 @@ public final class SpringBeanEditorViews {
     }
 
     private static void putStore(Map<String, Object> view, SpringBeanOverrideStore store) {
+        // The core context is the only one with an override store, and the only one whose beans can be edited:
+        // beans of module contexts are shown for inspection only.
+        view.put("editable", store != null);
         view.put("persistable", store != null);
         if (store != null) {
             view.put("storeFile", store.getFile().getAbsolutePath());

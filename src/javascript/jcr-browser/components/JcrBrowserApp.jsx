@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useApolloClient, useQuery} from '@apollo/client';
 import {Alert, AlertTitle, Box, CircularProgress, Paper, Typography} from '@mui/material';
-import {NODE_BY_ID, NODE_BY_PATH} from '../graphql/queries';
+import {NODE_BY_ID, NODE_BY_PATH, SESSION_INFO} from '../graphql/queries';
 import {
     ADD_MIXIN,
     ADD_NODE,
@@ -27,6 +27,7 @@ import PathBar from './PathBar';
 import NodeHeader from './NodeHeader';
 import ActionsBar from './ActionsBar';
 import PropertiesPanel from './PropertiesPanel';
+import {contextPaperSx} from '../sessionTheme';
 import PropertyEditorDialog from './PropertyEditorDialog';
 import ReferencesPanel from './ReferencesPanel';
 import VersionsPanel from './VersionsPanel';
@@ -47,6 +48,9 @@ export default function JcrBrowserApp({contextPath}) {
     const sessionVars = useMemo(() => ({workspace: state.workspace, mode: state.mode, language: state.language, user: state.user}), [state.workspace, state.mode, state.language, state.user]);
 
     // The tree always starts at the root node of the workspace.
+    const sessionQuery = useQuery(SESSION_INFO, {variables: sessionVars});
+    const session = sessionQuery.data?.admin?.superTools?.jcr?.session;
+    const languages = sessionQuery.data?.admin?.superTools?.jcr?.languages || [];
     const rootQuery = useQuery(NODE_BY_PATH, {variables: {...sessionVars, path: '/'}});
     const rootNode = rootQuery.data?.admin?.superTools?.jcr?.node;
 
@@ -131,9 +135,10 @@ export default function JcrBrowserApp({contextPath}) {
 
     return (
         <Box>
-            <SessionBar state={state} sessionVars={sessionVars} onModeChange={setMode} onLanguageChange={setLanguage} onUserChange={setUser}/>
+            <SessionBar state={state} session={session} languages={languages} error={sessionQuery.error} onModeChange={setMode} onLanguageChange={setLanguage} onUserChange={setUser}/>
             <PathBar
                 state={state}
+                session={session}
                 node={node}
                 onNavigateToPath={navigateToPath}
                 onNavigateToUuid={navigateToUuid}
@@ -141,7 +146,7 @@ export default function JcrBrowserApp({contextPath}) {
                 onCopied={() => notify('success', 'Copied to clipboard')}
             />
             <Box sx={{display: 'flex', gap: 2, alignItems: 'flex-start', flexDirection: {xs: 'column', lg: 'row'}}}>
-                <Paper sx={{width: {xs: '100%', lg: 380}, flexShrink: 0, p: 1, maxHeight: 'calc(100vh - 220px)', overflow: 'auto', position: {lg: 'sticky'}, top: 8}}>
+                <Paper sx={{width: {xs: '100%', lg: 380}, flexShrink: 0, p: 1, maxHeight: 'calc(100vh - 220px)', overflow: 'auto', position: {lg: 'sticky'}, top: 8, ...contextPaperSx(state.mode, state.workspace)}}>
                     {rootQuery.error && <Alert severity="error">{errorMessage(rootQuery.error)}</Alert>}
                     <JcrTree
                         root={rootNode}
@@ -168,6 +173,7 @@ export default function JcrBrowserApp({contextPath}) {
                         <>
                             <NodeHeader
                                 node={node}
+                                mode={state.mode}
                                 workspace={state.workspace}
                                 onCopied={() => notify('success', 'Copied to clipboard')}
                                 onRemoveMixin={mixin => askConfirmation('Remove mixin (Node.removeMixin)', `Remove mixin ${mixin} from ${node.path}? Properties and child nodes declared by this mixin will be lost.`,
@@ -197,6 +203,7 @@ export default function JcrBrowserApp({contextPath}) {
                             <PropertiesPanel
                                 properties={node.properties || []}
                                 locked={node.locked}
+                                onCopied={() => notify('success', 'Copied to clipboard')}
                                 onEdit={property => setEditor({open: true, property})}
                                 onNavigate={navigateToUuid}
                                 onRemove={property => askConfirmation('Remove property (Property.remove)', `Remove property ${property.name} from ${node.path}?`,

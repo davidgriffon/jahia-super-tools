@@ -1,6 +1,6 @@
 {
   "name": "jahia-super-tools-cypress",
-  "version": "0.0.1",
+  "version": "0.0.1-SNAPSHOT",
   "private": true,
   "license": "Apache-2.0",
   "scripts": {

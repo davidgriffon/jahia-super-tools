@@ -1,5 +1,5 @@
 /*
- * JCR browser (tools/jcrBrowser.jsp): React page on the module's raw JCR API (admin.superTools.jcr), which mirrors
+ * JCR Explorer (tools/jcrBrowser.jsp): React page on the module's raw JCR API (admin.superTools.jcr), which mirrors
  * javax.jcr on the session of the default provider. The suite works on its own content folder under the system site,
  * created before and deleted after the run.
  */
@@ -28,7 +28,7 @@ const rawNode = (path: string, workspace = 'default') => cy.apollo({
     variables: {path, workspace}
 }).then(response => response.data?.admin?.superTools?.jcr?.node ?? null);
 
-describe('JCR browser', () => {
+describe('JCR Explorer', () => {
     before(() => {
         cy.login();
         deleteNodeIfExists(FOLDER_PATH);
@@ -113,6 +113,31 @@ describe('JCR browser', () => {
         cy.get(byTestId('jcr-node-name')).should('contain', 'intro');
         cy.get(byTestId('jcr-node-type')).should('contain', 'jnt:text');
         cy.location('hash').should('contain', 'uuid=');
+    });
+
+    it('marks the session kind with a badge and a colour', () => {
+        cy.visit(urlOf(FOLDER_PATH));
+        cy.get(byTestId('jcr-session-bar')).should('have.attr', 'data-session-mode', 'RAW');
+        cy.get(byTestId('jcr-session-badge')).should('contain', 'Pure JCR session').and('have.css', 'background-color', 'rgb(84, 110, 122)');
+        cy.get(byTestId('jcr-node-session')).should('contain', 'Pure JCR');
+        cy.get(byTestId('jcr-session-JAHIA')).click();
+        cy.get(byTestId('jcr-session-bar')).should('have.attr', 'data-session-mode', 'JAHIA');
+        cy.get(byTestId('jcr-session-badge')).should('contain', 'Jahia JCR session').and('have.css', 'background-color', 'rgb(0, 137, 123)');
+        cy.get(byTestId('jcr-node-session')).should('contain', 'Jahia JCR');
+        cy.get(byTestId('jcr-jahia-info')).should('be.visible');
+    });
+
+    it('copies a property name and a value to the clipboard', () => {
+        cy.visit(urlOf(FOLDER_PATH), {
+            onBeforeLoad(win) {
+                cy.stub(win.navigator.clipboard, 'writeText').as('writeText').resolves();
+            }
+        });
+        propertyRow('jcr:primaryType').find(byTestId('jcr-property-copy-name')).click();
+        cy.get('@writeText').should('have.been.calledWith', 'jcr:primaryType');
+        cy.get(byTestId('notification')).should('contain', 'Copied to clipboard');
+        propertyRow('jcr:primaryType').find(byTestId('jcr-property-copy-value')).click();
+        cy.get('@writeText').should('have.been.calledWith', 'jnt:contentFolder');
     });
 
     it('filters the properties', () => {
@@ -242,7 +267,8 @@ describe('JCR browser', () => {
 
         it('resolves internationalized properties and hides translation nodes', () => {
             cy.visit(jahiaUrl(TEXT_PATH));
-            cy.get(byTestId('jcr-session-info')).should('contain', 'user root').and('contain', 'locale en');
+            cy.get(byTestId('jcr-session-info')).should('contain', 'user root');
+            cy.get(byTestId('jcr-session-locale')).should('contain', 'locale en');
             cy.get(byTestId('jcr-jahia-info')).should('be.visible');
             cy.get(byTestId('jcr-jahia-displayable-name')).should('not.be.empty');
             cy.get(byTestId('jcr-jahia-locale-en')).should('be.visible');
@@ -262,7 +288,7 @@ describe('JCR browser', () => {
         it('impersonates a user and sees the repository with that user rights', () => {
             cy.visit(jahiaUrl(FOLDER_PATH, '&user=guest'));
             cy.get(byTestId('jcr-session-info')).should('contain', 'user  guest');
-            // Guest cannot read the default workspace of the system site contents: the raw error names the path.
+            // Guest cannot read the default workspace of the system site contents: the banner names the exception type and the session.
             cy.get(byTestId('jcr-error')).should('contain', 'PathNotFoundException').and('contain', 'as guest');
             cy.get(byTestId('jcr-session-user-clear')).click();
             cy.location('hash').should('not.contain', 'user=');
@@ -298,8 +324,13 @@ describe('JCR browser', () => {
     it('reports an unpublished node when switching to the live workspace', () => {
         cy.visit(urlOf(FOLDER_PATH));
         cy.get(byTestId('jcr-node-name')).should('contain', FOLDER);
+        cy.get(byTestId('jcr-path-bar')).should('have.attr', 'data-workspace', 'default');
+        cy.get(byTestId('jcr-workspace-badge')).should('contain', 'default workspace').and('have.css', 'background-color', 'rgb(30, 136, 229)');
+        cy.get(byTestId('jcr-node-workspace')).should('contain', 'default');
         cy.get(byTestId('jcr-workspace-live')).click();
         cy.location('hash').should('contain', 'workspace=live');
+        cy.get(byTestId('jcr-path-bar')).should('have.attr', 'data-workspace', 'live');
+        cy.get(byTestId('jcr-workspace-badge')).should('contain', 'live workspace').and('have.css', 'background-color', 'rgb(46, 125, 50)');
         cy.get(byTestId('jcr-error')).should('contain', 'PathNotFoundException').and('contain', 'workspace live');
         cy.get(byTestId('jcr-workspace-default')).click();
         cy.get(byTestId('jcr-node-name')).should('contain', FOLDER);

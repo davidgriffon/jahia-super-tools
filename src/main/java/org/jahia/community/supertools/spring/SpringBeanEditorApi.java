@@ -118,6 +118,10 @@ public final class SpringBeanEditorApi {
                 body.put("error", "A save must be a POST");
                 return HttpServletResponse.SC_METHOD_NOT_ALLOWED;
             }
+            if (!SpringBeanEditorHelper.CORE_CONTEXT_ID.equals(context.getId())) {
+                body.put("error", "Beans of a module context are read only: only the beans of the Jahia core context can be edited");
+                return HttpServletResponse.SC_FORBIDDEN;
+            }
             BeanDefinition definition = SpringBeanEditorHelper.getBeanDefinition(context.getContext(), beanName);
             boolean persist = store != null && "persist".equals(request.getParameter("mode"));
             body.put("result", SpringBeanEditorSave.apply(bean, beanName, definition, store, persist, request::getParameter, actor(), context.getId()));

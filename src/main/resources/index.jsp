@@ -17,7 +17,7 @@
 
 <div class="st-tool-list">
     <div class="st-tool-card">
-        <h2><a href="tools/jcrBrowser.jsp">JCR browser (React)</a></h2>
+        <h2><a href="tools/jcrBrowser.jsp">JCR Explorer</a></h2>
         <p>Raw <code>javax.jcr</code> view of the default and live workspaces through a dedicated GraphQL API: tree,
             properties with their definitions (protected ones included), references, versions, locks, add node,
             mixins, set or remove properties, rename, move, checkin and checkout, export and remove.</p>

@@ -240,8 +240,6 @@
                     <c:forEach var="roleResult" items="${result.roleResults}">
                         <div class="role-card" data-test-id="role-card" data-role-name="${fn:escapeXml(roleResult.roleName)}">
                             <div class="role-card-header">
-                                <span class="role-name" data-test-id="role-name">${fn:escapeXml(roleResult.roleName)}</span>
-                                <span class="role-principal <c:if test="${fn:startsWith(roleResult.matchedPrincipal, 'g:')}">role-principal-group</c:if>" data-test-id="role-principal">${fn:escapeXml(roleResult.matchedPrincipal)}</span>
                                 <span class="role-tag">
                                 <c:choose>
                                     <c:when test="${roleResult.grantType == 'GRANT'}"><span class="tag-grant">GRANT</span></c:when>
@@ -249,6 +247,8 @@
                                     <c:otherwise><span class="tag-external">${fn:escapeXml(roleResult.grantType)}</span></c:otherwise>
                                 </c:choose>
                                 </span>
+                                <span class="role-name" data-test-id="role-name">${fn:escapeXml(roleResult.roleName)}</span>
+                                <span class="role-principal <c:if test="${fn:startsWith(roleResult.matchedPrincipal, 'g:')}">role-principal-group</c:if>" data-test-id="role-principal">${fn:escapeXml(roleResult.matchedPrincipal)}</span>
                             </div>
 
                             <div class="role-card-meta">

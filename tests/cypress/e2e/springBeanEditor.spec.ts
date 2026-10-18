@@ -91,6 +91,30 @@ describe('Spring bean editor', () => {
             });
         });
 
+        it('refuses a save on a bean of a module context', () => {
+            cy.visit(PAGES.springBeanEditor);
+            cy.get('#spring-bean-editor-root').invoke('attr', 'data-csrf').then(csrf => {
+                api('action=contexts').then(contexts => {
+                    const moduleContext = contexts.body.contexts.find((context: {id: string; editable: boolean}) => context.id.startsWith('module:'));
+                    expect(moduleContext.editable, 'module context editable flag').to.eq(false);
+                    api(`action=beans&context=${encodeURIComponent(moduleContext.id)}`).then(beans => {
+                        expect(beans.body.editable, 'module beans editable flag').to.eq(false);
+                        cy.request({
+                            method: 'POST',
+                            url: PAGES.springBeanEditorApi,
+                            form: true,
+                            failOnStatusCode: false,
+                            headers: {Origin: Cypress.config('baseUrl'), 'X-SuperTools-Csrf': csrf as string},
+                            body: {action: 'save', context: moduleContext.id, bean: beans.body.beans[0], mode: 'memory'}
+                        }).then(response => {
+                            expect(response.status).to.eq(403);
+                            expect(response.body.error).to.contain('read only');
+                        });
+                    });
+                });
+            });
+        });
+
         it('refuses a POST without the module CSRF token or from another origin', () => {
             const post = (headers: Record<string, string>) => cy.request({
                 method: 'POST',
@@ -177,11 +201,18 @@ describe('Spring bean editor', () => {
             });
         });
 
-        it('tells that a module context cannot persist', () => {
+        it('shows the beans of a module context read only', () => {
             cy.visit(PAGES.springBeanEditor);
             cy.get(byTestId('bean-context-input')).type('module');
             cy.get('ul[role="listbox"] li[role="option"]').first().click();
-            cy.contains('Persistence is not available for a module context').should('be.visible');
+            cy.get(byTestId('bean-readonly')).should('be.visible').and('contain', 'Read only context');
+            cy.get(byTestId('bean-name-input')).click();
+            cy.get('ul[role="listbox"] li[role="option"]').first().click();
+            cy.get(byTestId('bean-name')).should('be.visible');
+            cy.get(byTestId('bean-readonly-chip')).should('contain', 'read only');
+            cy.get(byTestId('bean-save')).should('not.exist');
+            cy.get(byTestId('bean-value-input')).should('not.exist');
+            cy.get(byTestId('bean-value-select')).should('not.exist');
         });
     });
 });

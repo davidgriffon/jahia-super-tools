@@ -4,6 +4,7 @@ import {Box, Button, Chip, Link, Paper, Stack, TextField, Typography} from '@mui
 import {CheckCircle as OkIcon, Cancel as KoIcon, VerifiedUser as PermissionIcon} from '@mui/icons-material';
 import {NODE_PERMISSION} from '../graphql/queries';
 import {formatDate} from '../../shared/format';
+import {SESSION_THEMES} from '../sessionTheme';
 
 function Flag({label, value, testId}) {
     return <Chip size="small" variant="outlined" icon={value ? <OkIcon color="success"/> : <KoIcon color="error"/>} label={label} data-testid={testId}/>;
@@ -20,8 +21,8 @@ export default function JahiaInfoPanel({node, sessionVars, onLanguageChange}) {
         return null;
     }
     return (
-        <Paper sx={{p: 2, mb: 2}} data-testid="jcr-jahia-info">
-            <Typography variant="h6" sx={{mb: 1}}>Jahia view</Typography>
+        <Paper sx={{p: 2, mb: 2, bgcolor: SESSION_THEMES.JAHIA.light, borderColor: SESSION_THEMES.JAHIA.border, borderLeft: `6px solid ${SESSION_THEMES.JAHIA.main}`}} data-testid="jcr-jahia-info">
+            <Typography variant="h6" sx={{mb: 1, color: SESSION_THEMES.JAHIA.dark}}>Jahia view</Typography>
             <Stack spacing={1}>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
                     <Typography variant="body2" color="text.secondary" sx={{minWidth: 100}}>Displayable name</Typography>

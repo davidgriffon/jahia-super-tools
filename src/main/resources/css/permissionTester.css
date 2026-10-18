@@ -294,7 +294,8 @@ details.perm-detail .perm-full-path {
 }
 
 .role-card-header .role-tag {
-    margin-left: auto;
+    display: inline-flex;
+    min-width: 72px;
 }
 
 .role-card-meta {

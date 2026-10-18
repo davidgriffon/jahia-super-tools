@@ -22,18 +22,19 @@ function ActionCheck({label, title, checked, onChange}) {
     );
 }
 
-function ValueCell({property, text, isNull, edit, onEdit}) {
+function ValueCell({property, text, isNull, edit, readOnly, onEdit}) {
     if (property.sensitive) {
         return <Typography variant="body2" color="text.secondary" fontStyle="italic" title="Sensitive property: masked and read only" data-testid="bean-value-masked">{property.value || '(not readable)'}</Typography>;
     }
-    if (!property.writable) {
+    if (!property.writable || readOnly) {
         let shown = property.value;
         if (!property.readable) {
             shown = '(not readable)';
         } else if (shown === null) {
             shown = 'null';
         }
-        return <Typography variant="body2" color="text.secondary" fontStyle="italic" title="No setter and no writable field">{shown}</Typography>;
+        const title = readOnly ? 'Read only: beans of a module context cannot be edited' : 'No setter and no writable field';
+        return <Typography variant="body2" color={readOnly ? 'text.primary' : 'text.secondary'} fontStyle={readOnly ? 'normal' : 'italic'} sx={{fontFamily: 'monospace', fontSize: '0.8rem'}} title={title} data-testid="bean-value-readonly">{shown}</Typography>;
     }
     if (property.boolean) {
         let value = isNull ? NULL_OPTION : text;
@@ -78,16 +79,16 @@ function ValueCell({property, text, isNull, edit, onEdit}) {
  * One editable property: its value control, the null box, and the status cell with the per-property actions.
  * `edit` holds what the user changed on this row and is merged by `onEdit`.
  */
-export default function PropertyRow({property, edit, isContextPersistable, onEdit}) {
+export default function PropertyRow({property, edit, isContextPersistable, readOnly, onEdit}) {
     const isEdited = Object.keys(edit).length > 0;
     // The null box is pre-checked only when the value is known to be null: an unreadable value is unknown.
     const isNull = edit.isNull === undefined ? (property.readable && property.value === null) : edit.isNull;
     const text = edit.text === undefined ? (property.value || '') : edit.text;
 
-    const showRestore = property.writable && property.configuredValue !== null && property.status !== 'CONFIGURED';
-    const showPersistCurrent = isContextPersistable && property.persistable && property.value !== null &&
+    const showRestore = !readOnly && property.writable && property.configuredValue !== null && property.status !== 'CONFIGURED';
+    const showPersistCurrent = !readOnly && isContextPersistable && property.persistable && property.value !== null &&
         (property.status === 'MEMORY' || property.status === 'PERSISTED_PENDING');
-    const showUnpersist = isContextPersistable && property.persistedValue !== null;
+    const showUnpersist = !readOnly && isContextPersistable && property.persistedValue !== null;
 
     return (
         <TableRow hover data-testid="bean-property-row" data-property={property.name} sx={isEdited ? {'& td': {bgcolor: '#fff8e6'}, '& td:first-of-type': {boxShadow: 'inset 4px 0 0 #e0a000'}} : undefined}>
@@ -96,10 +97,10 @@ export default function PropertyRow({property, edit, isContextPersistable, onEdi
             </TableCell>
             <TableCell sx={{verticalAlign: 'top'}}><Chip label={property.type} size="small" variant="outlined"/></TableCell>
             <TableCell sx={{verticalAlign: 'top'}}>
-                <ValueCell property={property} text={text} isNull={isNull} edit={edit} onEdit={onEdit}/>
+                <ValueCell property={property} text={text} isNull={isNull} edit={edit} readOnly={readOnly} onEdit={onEdit}/>
             </TableCell>
             <TableCell align="center" sx={{verticalAlign: 'top'}}>
-                {property.writable && !property.primitive && (
+                {!readOnly && property.writable && !property.primitive && (
                     <Checkbox size="small" checked={isNull} title={`Set ${property.name} to null`} onChange={event => onEdit({isNull: event.target.checked, text: event.target.checked ? '' : text})}/>
                 )}
             </TableCell>

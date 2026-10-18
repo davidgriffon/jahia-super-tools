@@ -4,14 +4,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html>
-<c:set var="title">JCR browser</c:set>
-<c:set var="description">
-    <p>JCR repository browser on the javax.jcr-like GraphQL API of this module (<code>admin.superTools.jcr</code>).
-        The <em>Pure JCR</em> session shows the default provider as the repository holds it (translation nodes,
-        protected properties, system nodes); the <em>Jahia JCR</em> session uses a <code>JCRSessionWrapper</code>
-        with a language, visibility and validity checks, permissions, and can impersonate a user. The current node,
-        workspace and session live in the URL fragment so a view can be bookmarked or shared.</p>
-</c:set>
+<c:set var="title">JCR Explorer</c:set>
+<c:set var="description"></c:set>
 <head>
     <%@ include file="../commons/html_header.jspf" %>
 </head>
@@ -25,7 +19,7 @@
 <div id="jcr-browser-root" class="st-app"
      data-context-path="${pageContext.request.contextPath}"
      data-graphql-endpoint="<c:url value='/modules/graphql'/>">
-    <div class="st-loading">Loading JCR browser...</div>
+    <div class="st-loading">Loading JCR Explorer...</div>
 </div>
 
 <%@ include file="../commons/footer.jspf" %>

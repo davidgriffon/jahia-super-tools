@@ -2,6 +2,7 @@ import {Box, Chip, IconButton, Paper, Stack, Tooltip, Typography} from '@mui/mat
 import {ContentCopy as CopyIcon, History as VersionIcon, Lock as LockIcon} from '@mui/icons-material';
 import {copyToClipboard} from '../../shared/format';
 import {displayName} from '../utils';
+import {badgeSx, contextPaperSx, sessionTheme, workspaceTheme} from '../sessionTheme';
 
 function Field({label, children}) {
     return (
@@ -12,13 +13,19 @@ function Field({label, children}) {
     );
 }
 
-export default function NodeHeader({node, workspace, onCopied, onRemoveMixin}) {
+export default function NodeHeader({mode, node, workspace, onCopied, onRemoveMixin}) {
     const lock = node.lock;
     const definition = node.definition;
 
     return (
-        <Paper sx={{p: 2, mb: 2}} data-testid="jcr-node-header">
+        <Paper sx={{p: 2, mb: 2, ...contextPaperSx(mode, workspace)}} data-testid="jcr-node-header">
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{mb: 1}}>
+                <Tooltip title={sessionTheme(mode).description}>
+                    <Chip size="small" label={sessionTheme(mode).label} sx={badgeSx(sessionTheme(mode))} data-testid="jcr-node-session"/>
+                </Tooltip>
+                <Tooltip title={workspaceTheme(workspace).description}>
+                    <Chip size="small" label={workspaceTheme(workspace).label} sx={badgeSx(workspaceTheme(workspace))} data-testid="jcr-node-workspace"/>
+                </Tooltip>
                 <Typography variant="h5" sx={{fontFamily: 'monospace'}} data-testid="jcr-node-name">{displayName(node)}</Typography>
                 <Chip label={`${workspace} workspace`} size="small" color={workspace === 'default' ? 'primary' : 'success'} variant="outlined"/>
                 {node.locked && (

@@ -21,7 +21,7 @@ import {
     TextField,
     Typography
 } from '@mui/material';
-import {Dns as ServerIcon, Extension as ModuleIcon, Refresh as RefreshIcon, Save as SaveIcon, Search as SearchIcon} from '@mui/icons-material';
+import {Dns as ServerIcon, Refresh as RefreshIcon, Save as SaveIcon, Search as SearchIcon, Lock as LockIcon} from '@mui/icons-material';
 import {fieldsFor} from '../api';
 import ConfirmDialog from '../../shared/ConfirmDialog';
 import PropertyRow from './PropertyRow';
@@ -139,6 +139,7 @@ export default function BeanEditorApp({api}) {
 
     const hasEdits = Object.values(edits).some(edit => Object.keys(edit).length > 0);
     const isPersistable = Boolean(bean && bean.persistable);
+    const isEditable = Boolean(bean && bean.editable);
 
     return (
         <Box>
@@ -155,10 +156,10 @@ export default function BeanEditorApp({api}) {
                             const {key, ...rest} = props;
                             return (
                                 <li key={key} {...rest}>
-                                    {option.persistable ? <ServerIcon fontSize="small" sx={{mr: 1, color: 'primary.main'}}/> : <ModuleIcon fontSize="small" sx={{mr: 1, color: 'text.secondary'}}/>}
+                                    {option.editable ? <ServerIcon fontSize="small" sx={{mr: 1, color: 'primary.main'}}/> : <LockIcon fontSize="small" sx={{mr: 1, color: 'text.secondary'}}/>}
                                     <Box>
                                         <Typography variant="body2">{option.label}</Typography>
-                                        <Typography variant="caption" color="text.secondary">{option.beanCount} beans{option.persistable ? ', changes can be persisted' : ''}</Typography>
+                                        <Typography variant="caption" color="text.secondary">{option.beanCount} beans, {option.editable ? 'editable, changes can be persisted' : 'read only'}</Typography>
                                     </Box>
                                 </li>
                             );
@@ -184,12 +185,16 @@ export default function BeanEditorApp({api}) {
                         onChange={(event, value) => selectBean(value)}
                     />
                 </Stack>
-                {beansView && (
+                {beansView && beansView.editable && (
                     <Typography variant="caption" color="text.secondary" component="p" sx={{mt: 1.5}}>
-                        {beansView.persistable ?
-                            <>Persistence: override file <code>{beansView.storeFile}</code> {beansView.storeExists ? '(present)' : '(not created yet)'}, loaded by the core context at startup.</> :
-                            'Persistence is not available for a module context: module Spring contexts only load the XML files packaged in the module bundle, not the WEB-INF/etc/spring override folder. Changes are kept in memory until the module or the server restarts.'}
+                        Persistence: override file <code>{beansView.storeFile}</code> {beansView.storeExists ? '(present)' : '(not created yet)'}, loaded by the core context at startup.
                     </Typography>
+                )}
+                {beansView && !beansView.editable && (
+                    <Alert severity="info" icon={<LockIcon fontSize="inherit"/>} sx={{mt: 1.5}} data-testid="bean-readonly">
+                        <AlertTitle>Read only context</AlertTitle>
+                        The beans of a module context are shown for inspection only. Only the beans of the Jahia core context can be edited.
+                    </Alert>
                 )}
             </Paper>
 
@@ -202,6 +207,7 @@ export default function BeanEditorApp({api}) {
                         <Typography variant="h5" data-testid="bean-name">{bean.name}</Typography>
                         <Chip label={bean.className} size="small" variant="outlined" sx={{fontFamily: 'monospace'}}/>
                         {bean.persistedCount > 0 && <Chip label={`${bean.persistedCount} persisted override${bean.persistedCount > 1 ? 's' : ''}`} size="small" color="success"/>}
+                        {!isEditable && <Chip icon={<LockIcon/>} label="read only" size="small" color="default" data-testid="bean-readonly-chip"/>}
                     </Stack>
                     <Typography variant="caption" color="text.secondary" component="p">
                         Defined in {bean.definitionResource ? <code>{bean.definitionResource}</code> : <em>unknown</em>}
@@ -248,22 +254,26 @@ export default function BeanEditorApp({api}) {
                                             property={property}
                                             edit={edits[property.name] || {}}
                                             isContextPersistable={isPersistable}
+                                            readOnly={!isEditable}
                                             onEdit={change => onEdit(property.name, change)}
                                         />
                                     ))}
                                 </TableBody>
                             </Table>
                             <Stack direction={{xs: 'column', md: 'row'}} justifyContent="space-between" alignItems="center" spacing={2} sx={{mt: 2}}>
-                                {isPersistable ? (
+                                {!isEditable && (
+                                    <Typography variant="body2" color="text.secondary" sx={{display: 'flex', alignItems: 'center', gap: 0.5}}><LockIcon fontSize="small"/> Read only: this bean belongs to a module context.</Typography>
+                                )}
+                                {isEditable && isPersistable ? (
                                     <RadioGroup row name="mode" value={mode} onChange={event => setMode(event.target.value)}>
                                         <FormControlLabel value="memory" control={<Radio size="small" data-testid="bean-mode-memory"/>} label={<Box><Typography variant="body2">Apply in memory only</Typography><Typography variant="caption" color="text.secondary">Lost on restart</Typography></Box>}/>
                                         <FormControlLabel value="persist" control={<Radio size="small" data-testid="bean-mode-persist"/>} label={<Box><Typography variant="body2">Apply in memory and persist</Typography><Typography variant="caption" color="text.secondary">Written to the override file, applied at every startup</Typography></Box>}/>
                                     </RadioGroup>
-                                ) : (
+                                ) : isEditable && (
                                     <Typography variant="caption" color="text.secondary">Changes are applied in memory only.</Typography>
                                 )}
                                 <Stack direction="row" spacing={1}>
-                                    <Button variant="text" disabled={!hasEdits || isSaving} data-testid="bean-discard" onClick={() => setEdits({})}>Discard edits</Button>
+                                    {isEditable && <Button variant="text" disabled={!hasEdits || isSaving} data-testid="bean-discard" onClick={() => setEdits({})}>Discard edits</Button>}
                                     <Button variant="outlined" startIcon={<RefreshIcon/>} disabled={isSaving} data-testid="bean-reload" onClick={() => {
                                         setResult(null);
                                         loadBean(context.id, beanName);
@@ -271,15 +281,17 @@ export default function BeanEditorApp({api}) {
                                     >
                                         Reload
                                     </Button>
-                                    <Button variant="contained" startIcon={isSaving ? <CircularProgress size={16} color="inherit"/> : <SaveIcon/>} disabled={!hasEdits || isSaving} data-testid="bean-save" onClick={requestSave}>Save changes</Button>
+                                    {isEditable && <Button variant="contained" startIcon={isSaving ? <CircularProgress size={16} color="inherit"/> : <SaveIcon/>} disabled={!hasEdits || isSaving} data-testid="bean-save" onClick={requestSave}>Save changes</Button>}
                                 </Stack>
                             </Stack>
+                            {isEditable && (
                             <Typography variant="caption" color="text.secondary" component="p" sx={{mt: 1.5}}>
                                 Only edited rows are applied, through the setter of the bean; a property without a setter is read only.
                                 The <em>null</em> box is checked when the current value is null: type a value or uncheck it to set one. An empty
                                 text sets an empty String; it sets null for a number or boolean wrapper.
                                 {isPersistable && ' A persisted override needs a setter and cannot be null; setting a persisted property to null removes its override.'}
                             </Typography>
+                            )}
                         </>
                     )}
                 </Paper>

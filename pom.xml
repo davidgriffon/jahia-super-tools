@@ -32,7 +32,7 @@
     -->
     <groupId>org.jahia.community</groupId>
     <artifactId>jahia-super-tools</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>Jahia Super Tools</name>
     <description>
@@ -46,7 +46,7 @@
         <!-- The host is a property so that a local SSH alias can be used for the release pushes (see the README). -->
         <developerConnection>scm:git:git@${github.ssh.host}:davidgriffon/jahia-super-tools.git</developerConnection>
         <url>https://github.com/davidgriffon/jahia-super-tools</url>
-        <tag>v0.0.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>

@@ -147,6 +147,54 @@ The release pushes with the SSH URL of `developerConnection`. With an SSH alias 
 `-Dgithub.ssh.host=github.com-myalias` to `release:prepare` and `release:perform`, or set that property in an active
 profile of `~/.m2/settings.xml`.
 
+## Jahia Store
+
+The module is listed in the Jahia Store as a **git-backed module**: the store reads this repository
+and nothing is uploaded. Three files carry what it reads.
+
+- [`STORE.md`](STORE.md) describes the module. Its front matter holds the store fields: `name` and
+  `groupId` are the Maven coordinates, `artifact` is the URL of the jar of a version with `{version}`
+  in place of the version number, and `requiredVersion` and `dependencies` are read at each tag.
+  The Markdown body is the description shown in the store. The fields `name`, `groupId`, `title`
+  and `artifact` are mandatory.
+- The **tags** of the repository are the versions. A tag is a version when it matches the pattern
+  of the store, `1.2.3` or `v1.2.3` by default, so the `vX.Y.Z` tags that `mvn release:prepare`
+  creates are picked up as they are, and a pre-release tag such as `v1.2.3-rc1` is not. The version
+  number is the tag without its `v`.
+- [`CHANGELOG.md`](CHANGELOG.md) holds the release notes, read at each tag.
+
+### Release notes
+
+The store takes the release notes of a version from `CHANGELOG.md` **as it stands at the tag of
+that version**, in the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) layout: the text
+under the `##` heading that names the version, up to the next `##` heading. Each release therefore
+updates the changelog **before** `mvn release:prepare`, so the section is inside the tag.
+
+1. Write the changes of the coming version under `## [Unreleased]`, in the `### Added`,
+   `### Changed`, `### Fixed`, `### Removed` and `### Security` groups.
+2. Just before the release, rename that section to the version and its date, and open a fresh
+   `## [Unreleased]` above it:
+
+   ```markdown
+   ## [Unreleased]
+
+   ## [1.2.0] - 2026-10-18
+   ### Added
+   - The assets usage checker reports the line of every reference.
+   ### Fixed
+   - The JCR Explorer keeps the impersonated user when the workspace changes.
+   ```
+
+3. Commit, then run `mvn release:prepare` and `mvn release:perform`. The tag `v1.2.0` holds the
+   section above, and the store renders it as the release notes of version 1.2.0.
+4. Attach the jar to the GitHub release of the tag, under the name
+   `jahia-super-tools-1.2.0.jar`, because `artifact` in `STORE.md` points at
+   `https://github.com/davidgriffon/jahia-super-tools/releases/download/v1.2.0/jahia-super-tools-1.2.0.jar`.
+   GitHub Packages needs a token even for a public package, so the store serves the release asset.
+
+A heading written as `## 1.2.0` or `## v1.2.0` is read too. A version with no section lists in the
+store without release notes.
+
 ## Tests
 
 Unit tests run with the Maven build. The end-to-end suite lives in [`tests/`](tests/README.md).

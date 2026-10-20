@@ -1,7 +1,7 @@
 /*
  * Assets usage checker (tools/assetsUsage.jsp): a plain JSP form that scans the active modules.
  */
-import {PAGES} from '../support/helpers';
+import {PAGES, captureExports, exportedText} from '../support/helpers';
 
 describe('Assets usage checker', () => {
     beforeEach(() => cy.login());
@@ -27,6 +27,25 @@ describe('Assets usage checker', () => {
         cy.get('table.st-table').first().find('tbody tr').should('have.length.greaterThan', 0);
         cy.get('table.st-table').first().find('.st-badge').first().should('contain', 'in assets');
         cy.contains('h2', 'Per-module breakdown').should('be.visible');
+    });
+
+    it('exports the scan report as CSV, JSON and XML without scanning again', () => {
+        captureExports();
+        cy.visit(PAGES.assetsUsage);
+        cy.get('input[type="submit"]').click();
+        cy.contains('Global summary').should('be.visible');
+        cy.get('[data-test-id="export-csv"]').click();
+        exportedText(0).should('contain', 'Module,Type,Resource,Usages in module,Used in file');
+        cy.get('[data-test-id="export-json"]').click();
+        exportedText(1).then(text => {
+            const document = JSON.parse(text);
+            expect(document.targetBundle).to.eq('assets');
+            expect(document.summary.scannedModules).to.be.greaterThan(0);
+            expect(document.resources).to.not.be.empty;
+            expect(document.modules[0].resources[0].files).to.not.be.empty;
+        });
+        cy.get('[data-test-id="export-xml"]').click();
+        exportedText(2).should('contain', '<assetsUsage>').and('contain', '<resource>');
     });
 
     it('warns when the target bundle is not active and still reports the references', () => {

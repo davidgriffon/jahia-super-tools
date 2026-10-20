@@ -40,11 +40,11 @@ The suite creates and removes its own data. What it touches on the instance:
 |------|----------------|
 | `access.spec.ts` | every page and the GraphQL API deny anonymous callers and logged-in users without the tools permission, and serve an administrator |
 | `index.spec.ts` | the landing page lists the five tools, their links answer, the Support Tools home page lists them |
-| `jcrBrowser.spec.ts` | the raw API (translation nodes, protected properties, workspace and path errors), node details, tree, navigation by path and through the tree, property filter, edit of a translation node property, mixin and property add/remove, add node, lock/unlock, rename, move, remove, live workspace; and the Jahia session: internationalized properties, visibility and validity checks, permission check, impersonation of `guest`, unknown user, switch back to the pure session, internationalized write |
-| `cacheBrowser.spec.ts` | statistics, grouping by site and by language, search, details dialog with the sandboxed preview and the tabs, GraphQL pagination and group values, flush of one entry, flush of the whole cache |
-| `permissionTester.spec.ts` | form rendering, empty and error states, direct user grant, group grant (membership resolved through the site), group principal lookup, combined grants |
-| `assetsUsage.spec.ts` | form defaults, a scan of the assets bundle (POST), the warning for an unknown bundle, URL prefill without scanning |
-| `springBeanEditor.spec.ts` | the JSON API (contexts, beans minus the denied ones, bean view, masked secrets, error cases, CSRF refusals), an in-memory edit confirmed then put back, discard and reload, the module context hint, the persisted overrides panel |
+| `jcrBrowser.spec.ts` | the node export in JSON, CSV and XML, the raw API (translation nodes, protected properties, workspace and path errors), node details, tree, navigation by path and through the tree, property filter, edit of a translation node property, mixin and property add/remove, add node, lock/unlock, rename, move, remove, live workspace; and the Jahia session: internationalized properties, visibility and validity checks, permission check, impersonation of `guest`, unknown user, switch back to the pure session, internationalized write |
+| `cacheBrowser.spec.ts` | the export of a whole group in CSV, JSON and XML, statistics, grouping by site and by language, search, details dialog with the sandboxed preview and the tabs, GraphQL pagination and group values, flush of one entry, flush of the whole cache |
+| `permissionTester.spec.ts` | the analysis export in CSV, JSON and XML, form rendering, empty and error states, direct user grant, group grant (membership resolved through the site), group principal lookup, combined grants |
+| `assetsUsage.spec.ts` | the report export in CSV, JSON and XML, form defaults, a scan of the assets bundle (POST), the warning for an unknown bundle, URL prefill without scanning |
+| `springBeanEditor.spec.ts` | the bean export in JSON, CSV and Spring XML, the JSON API (contexts, beans minus the denied ones, bean view, masked secrets, error cases, CSRF refusals), an in-memory edit confirmed then put back, discard and reload, the module context hint, the persisted overrides panel |
 
 ## Conventions
 
@@ -54,4 +54,6 @@ The suite creates and removes its own data. What it touches on the instance:
   JSON API go through `cy.request`, which carries the session opened by `cy.login()`.
 - A Mocha nested `describe` runs after the sibling `it`s of its parent: a nested test must not assume it runs first
   when a sibling changes the data it reads.
+- Exports are read with `captureExports()` and `exportedText(n)` from the helpers, which record the files the page
+  hands to `URL.createObjectURL`; the downloads folder is not used.
 - `cypress.config.ts` lists the pages of the module in `SUPER_TOOLS_PAGES`; add a page there when adding a tool.

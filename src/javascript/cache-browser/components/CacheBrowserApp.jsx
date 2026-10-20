@@ -40,6 +40,8 @@ import ConfirmDialog from '../../shared/ConfirmDialog';
 import {useNotification} from '../../shared/useNotification';
 import CacheStatistics from './CacheStatistics';
 import CacheEntryDetails from './CacheEntryDetails';
+import ExportMenu from '../../shared/ExportMenu';
+import {cacheExportSpec} from '../export';
 
 const SORTERS = {
     key: (a, b) => a.key.localeCompare(b.key),
@@ -187,6 +189,19 @@ export default function CacheBrowserApp() {
                             Flush all
                         </Button>
                     </ButtonGroup>
+                    <ExportMenu
+                        formats={['csv', 'json', 'xml']}
+                        testId="cache-export"
+                        descriptions={{csv: 'one line per entry, key parts in columns', json: 'statistics, filter and entries', xml: 'statistics, filter and entries'}}
+                        disabled={!cacheData}
+                        spec={() => cacheExportSpec(client, {
+                            groupBy: groupBy === 'none' ? null : groupBy,
+                            filterValue: groupBy === 'none' ? null : filterValue,
+                            search: debouncedSearch || null
+                        })}
+                        onExported={fileName => notify('success', `Exported ${fileName}`)}
+                        onError={error => notify('error', `Export failed: ${error.message}`)}
+                    />
                     <ButtonGroup variant="outlined" size="small">
                         <Button variant={showContent ? 'outlined' : 'contained'} onClick={() => setShowContent(false)}>List</Button>
                         <Button variant={showContent ? 'contained' : 'outlined'} data-testid="cache-content-preview" onClick={() => setShowContent(true)}>Content preview</Button>

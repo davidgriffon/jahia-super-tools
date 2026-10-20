@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="st" uri="http://www.jahia.org/tags/supertools" %>
 <st:requireToolsAccess/>
-<%@ page import="org.jahia.community.supertools.assets.AssetsUsageScanner" %>
+<%@ page import="org.jahia.community.supertools.assets.AssetsUsageScanner,org.jahia.community.supertools.assets.AssetsUsageReport,org.jahia.community.supertools.export.ExportPayloads" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
@@ -21,7 +21,9 @@
     if ("POST".equals(request.getMethod()) && "true".equals(request.getParameter("scan"))) {
         long start = System.currentTimeMillis();
         try {
-            pageContext.setAttribute("report", AssetsUsageScanner.scan(searchPattern, targetBundle));
+            AssetsUsageReport report = AssetsUsageScanner.scan(searchPattern, targetBundle);
+            pageContext.setAttribute("report", report);
+            pageContext.setAttribute("exportPayload", ExportPayloads.assets(report));
         } catch (IllegalStateException busy) {
             pageContext.setAttribute("busyMsg", busy.getMessage());
         }
@@ -63,6 +65,14 @@
 <c:if test="${not empty report}">
     <p>Scanned <strong>${report.scannedModules}</strong> active modules (${report.scannedBytes} bytes) in ${duration} ms for
         <code>${fn:escapeXml(report.searchPattern)}</code>, target bundle <code>${fn:escapeXml(report.targetBundle)}</code>.</p>
+    <%-- JSON built and escaped for a script element by ExportPayloads --%>
+    <script type="application/json" id="st-export-data">${exportPayload}</script>
+    <div class="st-export" data-st-export="st-export-data" data-test-id="export-bar">
+        <span class="st-export-label">Export</span>
+        <button type="button" data-format="csv" data-test-id="export-csv">CSV</button>
+        <button type="button" data-format="json" data-test-id="export-json">JSON</button>
+        <button type="button" data-format="xml" data-test-id="export-xml">XML</button>
+    </div>
     <c:if test="${report.truncated}">
         <div class="st-warning">The read budget was spent before the last module: this report is partial.</div>
     </c:if>
@@ -133,5 +143,6 @@
 </c:if>
 
 <%@ include file="../commons/footer.jspf" %>
+<script src="<c:url value='/modules/jahia-super-tools/javascript/apps/exporter.bundle.js'/>"></script>
 </body>
 </html>

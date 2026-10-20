@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8"%>
 <%@ taglib prefix="st" uri="http://www.jahia.org/tags/supertools" %>
 <st:requireToolsAccess/>
-<%@ page import="org.jahia.community.supertools.permissions.UserPermissionsAnalyzer,org.jahia.community.supertools.permissions.UserPermissionsAnalyzer.Result" %>
+<%@ page import="org.jahia.community.supertools.permissions.UserPermissionsAnalyzer,org.jahia.community.supertools.permissions.UserPermissionsAnalyzer.Result,org.jahia.community.supertools.export.ExportPayloads" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="functions" uri="http://www.jahia.org/tags/functions" %>
@@ -42,6 +42,8 @@
                     request.getParameter("nodePath"), selectedWorkspace, request.getParameter("checkPermission"),
                     request.getParameter("userSite"), request);
             pageContext.setAttribute("result", analysisResult);
+            pageContext.setAttribute("exportPayload", ExportPayloads.permissions(analysisResult, request.getParameter("username").trim(),
+                    request.getParameter("nodePath").trim(), selectedWorkspace, request.getParameter("userSite"), request.getParameter("checkPermission")));
         } catch (javax.jcr.PathNotFoundException e) {
             pageContext.setAttribute("errorMsg", "Node not found: " + request.getParameter("nodePath"));
         } catch (Exception e) {
@@ -115,6 +117,16 @@
 
     <c:if test="${not empty errorMsg}">
         <p class="error-msg" data-test-id="error-msg">${fn:escapeXml(errorMsg)}</p>
+    </c:if>
+    <c:if test="${not empty exportPayload and empty errorMsg}">
+    <%-- JSON built and escaped for a script element by ExportPayloads --%>
+    <script type="application/json" id="st-export-data">${exportPayload}</script>
+    <div class="st-export" data-st-export="st-export-data" data-test-id="export-bar">
+        <span class="st-export-label">Export</span>
+        <button type="button" data-format="csv" data-test-id="export-csv">CSV</button>
+        <button type="button" data-format="json" data-test-id="export-json">JSON</button>
+        <button type="button" data-format="xml" data-test-id="export-xml">XML</button>
+    </div>
     </c:if>
 
     <c:if test="${not empty checkPermissionParam and empty errorMsg}">
@@ -344,5 +356,6 @@
 </c:if>
 
 <%@ include file="../commons/footer.jspf" %>
+<script src="<c:url value='/modules/jahia-super-tools/javascript/apps/exporter.bundle.js'/>"></script>
 </body>
 </html>

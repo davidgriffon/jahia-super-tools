@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useQuery} from '@apollo/client';
-import {Autocomplete, Button, ButtonGroup, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Menu, MenuItem, Paper, Stack, TextField, Typography} from '@mui/material';
+import {Autocomplete, Button, ButtonGroup, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, ListItemText, ListSubheader, Menu, MenuItem, Paper, Stack, TextField, Typography} from '@mui/material';
 import {
     Add as AddIcon,
     CreateNewFolder as AddNodeIcon,
@@ -16,6 +16,8 @@ import {
     Undo as CheckoutIcon
 } from '@mui/icons-material';
 import {NODE_TYPES} from '../graphql/queries';
+import {runExport} from '../../shared/export';
+import {nodeExportSpec} from '../export';
 
 function NameDialog({title, label, initial, submitLabel, testId, onSubmit, onClose}) {
     const [value, setValue] = useState(initial || '');
@@ -86,6 +88,10 @@ export default function ActionsBar({node, workspace, sessionVars, contextPath, b
 
     const isRoot = node.depth === 0;
     const locked = node.locked;
+    const exportNode = format => {
+        setExportAnchor(null);
+        runExport(format, nodeExportSpec(node, sessionVars));
+    };
     const exportBase = `${contextPath}/cms/export/${workspace}${node.path === '/' ? '' : node.path}`;
     const close = () => setDialog(null);
 
@@ -112,6 +118,12 @@ export default function ActionsBar({node, workspace, sessionVars, contextPath, b
                 <Button size="small" variant="outlined" startIcon={<MoveIcon/>} disabled={busy || isRoot || locked} data-testid="jcr-action-move" onClick={() => setDialog('move')}>Move</Button>
                 <Button size="small" variant="outlined" startIcon={<ExportIcon/>} data-testid="jcr-action-export" onClick={event => setExportAnchor(event.currentTarget)}>Export</Button>
                 <Menu open={Boolean(exportAnchor)} anchorEl={exportAnchor} onClose={() => setExportAnchor(null)}>
+                    <ListSubheader>This node, as shown</ListSubheader>
+                    <MenuItem data-testid="jcr-export-json" onClick={() => exportNode('json')}><ListItemText primary="JSON" secondary="node, session and properties"/></MenuItem>
+                    <MenuItem data-testid="jcr-export-csv" onClick={() => exportNode('csv')}><ListItemText primary="CSV" secondary="properties table"/></MenuItem>
+                    <MenuItem data-testid="jcr-export-xml" onClick={() => exportNode('xml')}><ListItemText primary="XML" secondary="JCR system view of the node"/></MenuItem>
+                    <Divider/>
+                    <ListSubheader>Subtree, Jahia export</ListSubheader>
                     <MenuItem component="a" href={`${exportBase}.xml?cleanup=simple`} target="_blank" rel="noopener" onClick={() => setExportAnchor(null)}>XML (simple cleanup)</MenuItem>
                     <MenuItem component="a" href={`${exportBase}.xml`} target="_blank" rel="noopener" onClick={() => setExportAnchor(null)}>XML (full)</MenuItem>
                     <MenuItem component="a" href={`${exportBase}.zip?cleanup=simple`} target="_blank" rel="noopener" onClick={() => setExportAnchor(null)}>ZIP (with binaries)</MenuItem>

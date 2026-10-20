@@ -26,6 +26,8 @@ import {fieldsFor} from '../api';
 import ConfirmDialog from '../../shared/ConfirmDialog';
 import PropertyRow from './PropertyRow';
 import OverridesPanel from './OverridesPanel';
+import ExportMenu from '../../shared/ExportMenu';
+import {beanExportSpec} from '../export';
 
 function Messages({result, error}) {
     if (error) {
@@ -208,6 +210,14 @@ export default function BeanEditorApp({api}) {
                         <Chip label={bean.className} size="small" variant="outlined" sx={{fontFamily: 'monospace'}}/>
                         {bean.persistedCount > 0 && <Chip label={`${bean.persistedCount} persisted override${bean.persistedCount > 1 ? 's' : ''}`} size="small" color="success"/>}
                         {!isEditable && <Chip icon={<LockIcon/>} label="read only" size="small" color="default" data-testid="bean-readonly-chip"/>}
+                        <Box sx={{ml: 'auto'}}>
+                            <ExportMenu
+                                formats={['json', 'csv', 'xml']}
+                                testId="bean-export"
+                                descriptions={{json: 'bean, context and every property status', csv: 'properties table', xml: 'Spring bean definition with the current values'}}
+                                spec={() => beanExportSpec(context, bean)}
+                            />
+                        </Box>
                     </Stack>
                     <Typography variant="caption" color="text.secondary" component="p">
                         Defined in {bean.definitionResource ? <code>{bean.definitionResource}</code> : <em>unknown</em>}

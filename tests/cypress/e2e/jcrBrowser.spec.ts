@@ -5,7 +5,7 @@
  */
 import gql from 'graphql-tag';
 import {addNode} from '@jahia/cypress';
-import {PAGES, byTestId, deleteNodeIfExists, propertyValue} from '../support/helpers';
+import {PAGES, byTestId, deleteNodeIfExists, propertyValue, captureExports, exportedText} from '../support/helpers';
 
 const FOLDER = 'st-cypress-jcr';
 const FOLDER_PATH = `/sites/systemsite/contents/${FOLDER}`;
@@ -125,6 +125,27 @@ describe('JCR Explorer', () => {
         cy.get(byTestId('jcr-session-badge')).should('contain', 'Jahia JCR session').and('have.css', 'background-color', 'rgb(0, 137, 123)');
         cy.get(byTestId('jcr-node-session')).should('contain', 'Jahia JCR');
         cy.get(byTestId('jcr-jahia-info')).should('be.visible');
+    });
+
+    it('exports the node as JSON, CSV and JCR system view XML', () => {
+        captureExports();
+        cy.visit(urlOf(FOLDER_PATH));
+        cy.get(byTestId('jcr-node-name')).should('contain', FOLDER);
+        cy.get(byTestId('jcr-action-export')).click();
+        cy.get(byTestId('jcr-export-json')).click();
+        exportedText(0).then(text => {
+            const document = JSON.parse(text);
+            expect(document.node.path).to.eq(FOLDER_PATH);
+            expect(document.session.workspace).to.eq('default');
+            expect(document.properties.map((property: {name: string}) => property.name)).to.include('jcr:primaryType');
+        });
+        cy.get(byTestId('jcr-action-export')).click();
+        cy.get(byTestId('jcr-export-csv')).click();
+        exportedText(1).should('contain', 'Name,Type,Multiple,Value').and('contain', 'jcr:primaryType,NAME,false,jnt:contentFolder');
+        cy.get(byTestId('jcr-action-export')).click();
+        cy.get(byTestId('jcr-export-xml')).click();
+        exportedText(2).should('contain', `<sv:node xmlns:sv="http://www.jcp.org/jcr/sv/1.0" sv:name="${FOLDER}">`)
+            .and('contain', '<sv:property sv:name="jcr:primaryType" sv:type="Name">');
     });
 
     it('copies a property name and a value to the clipboard', () => {

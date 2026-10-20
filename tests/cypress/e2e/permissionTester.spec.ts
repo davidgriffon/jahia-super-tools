@@ -20,6 +20,7 @@
  * standard Jahia installation. Both have `jnt:externalPermissions` nodes, so they produce
  * external ACEs at site level when granted on a content node.
  */
+import {captureExports, exportedText} from '../support/helpers';
 import {
     addNode,
     addUserToGroup,
@@ -171,6 +172,25 @@ describe('User permissions inspector (tools/permissionTester.jsp)', () => {
         it('should display a role card with the correct role name', () => {
             submitForm(UP_TEST_USER, NODE_PATH, SITE_KEY);
             getRoleCard('editor').should('be.visible');
+        });
+
+        it('should export the analysis as CSV, JSON and XML', () => {
+            captureExports();
+            submitForm(UP_TEST_USER, NODE_PATH, SITE_KEY);
+            getRoleCard('editor').should('be.visible');
+            cy.get('[data-test-id="export-csv"]').click();
+            exportedText(0).should('contain', 'Role,Grant type,Principal,Granted on,Scope,Target,Permission')
+                .and('contain', `editor,GRANT,u:${UP_TEST_USER},${NODE_PATH},node,`);
+            cy.get('[data-test-id="export-json"]').click();
+            exportedText(1).then(text => {
+                const document = JSON.parse(text);
+                expect(document.query).to.deep.include({principal: UP_TEST_USER, nodePath: NODE_PATH, workspace: 'default'});
+                const editor = document.roles.find((role: {role: string}) => role.role === 'editor');
+                expect(editor.grantType).to.eq('GRANT');
+                expect(editor.nodePermissions).to.not.be.empty;
+            });
+            cy.get('[data-test-id="export-xml"]').click();
+            exportedText(2).should('contain', '<userPermissions>').and('contain', '<role>editor</role>');
         });
 
         it('should show a GRANT tag on the role card', () => {

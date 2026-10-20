@@ -12,7 +12,9 @@ module.exports = (env, argv) => {
         entry: {
             cacheBrowser: path.resolve(__dirname, 'src/javascript/cache-browser/index.jsx'),
             jcrBrowser: path.resolve(__dirname, 'src/javascript/jcr-browser/index.jsx'),
-            beanEditor: path.resolve(__dirname, 'src/javascript/bean-editor/index.jsx')
+            beanEditor: path.resolve(__dirname, 'src/javascript/bean-editor/index.jsx'),
+            // Export buttons of the JSP tools (permissions inspector, assets usage checker).
+            exporter: path.resolve(__dirname, 'src/javascript/exporter/index.js')
         },
         output: {
             path: path.resolve(__dirname, 'src/main/resources/javascript/apps/'),

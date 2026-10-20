@@ -336,3 +336,32 @@ body.home td:nth-child(odd) fieldset {
     border-radius: 4px;
     margin: 12px 0;
 }
+
+/* Export bar of the JSP tools (driven by the exporter bundle) */
+.st-export {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0;
+}
+
+.st-export-label {
+    color: #666;
+    font-size: 0.85em;
+    margin-right: 4px;
+}
+
+.st-export button {
+    padding: 4px 12px;
+    border: 1px solid #0072B1;
+    border-radius: 4px;
+    background: #fff;
+    color: #0072B1;
+    font-size: 0.85em;
+    cursor: pointer;
+}
+
+.st-export button:hover {
+    background: #0072B1;
+    color: #fff;
+}

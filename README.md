@@ -20,6 +20,21 @@ Support Tools home page (`/modules/tools/index.jsp`) and on the module's own lan
 
 All pages require the `systemToolsAccess` permission, like the Support Tools.
 
+Every tool has an **Export** button that saves what is on screen as a file:
+
+| Tool | CSV | JSON | XML |
+|------|-----|------|-----|
+| JCR Explorer | properties of the node | node, session and properties | JCR system view of the node |
+| Output cache browser | one line per entry, key parts in columns | statistics, filter and entries | same as JSON |
+| User permissions inspector | one line per role and permission | query, permission check and roles | same as JSON |
+| Spring bean editor | properties of the bean | bean, context and property statuses | Spring bean definition with the current values |
+| Assets usage checker | one line per module, resource and file | summary, resources and modules | same as JSON |
+
+The cache export covers every entry of the current group and search, up to 20,000 entries, not only the page on
+screen. The JCR Explorer keeps the Jahia subtree exports (XML, ZIP) in the same menu. Masked bean properties are left
+out of the Spring XML. The files are built in the browser from the data already loaded, so an export never runs a scan
+or an analysis again.
+
 ## Requirements
 
 - Jahia 8.2.0.0 or later.

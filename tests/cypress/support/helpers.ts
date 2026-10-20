@@ -64,3 +64,25 @@ export function pickAutocompleteOption(inputTestId: string, text: string, label 
     cy.get(byTestId(inputTestId)).type(text);
     cy.get('ul[role="listbox"] li[role="option"]').contains(label).click();
 }
+
+/**
+ * Records every file the tools hand to the browser (they all go through URL.createObjectURL), on every page loaded
+ * during the current test, so that a test can read what an export produced without going through the downloads folder.
+ */
+export function captureExports(): void {
+    cy.on('window:before:load', (win: Cypress.AUTWindow) => {
+        const target = win as unknown as {__stExports: Blob[]};
+        target.__stExports = [];
+        const original = win.URL.createObjectURL.bind(win.URL);
+        win.URL.createObjectURL = (blob: Blob) => {
+            target.__stExports.push(blob);
+            return original(blob);
+        };
+    });
+}
+
+/** Text of the n-th file exported on the current page (0 for the first one). */
+export function exportedText(index = 0): Cypress.Chainable<string> {
+    return cy.window().its('__stExports').should('have.length.greaterThan', index)
+        .then((list: Blob[]) => list[index].text());
+}

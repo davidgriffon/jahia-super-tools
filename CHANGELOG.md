@@ -7,6 +7,30 @@ from this file as it stands at the tag of that version: see "Release notes" in t
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-10-20
+
+### Added
+
+- **Export** button in every tool, to CSV, JSON and XML, built in the browser from the data on screen:
+  - JCR Explorer: the node, its session and its properties, and a JCR system view of the node, next to the
+    Jahia subtree exports.
+  - Output cache browser: every entry of the current group and search, up to 20,000 entries, with the key
+    parts in columns.
+  - User permissions inspector: the query, the permission check and one line per role and permission.
+  - Spring bean editor: the bean properties with their status, and a Spring bean definition carrying the
+    current values. Masked properties are left out.
+  - Assets usage checker: the scan report, one line per module, resource and file, without scanning again.
+
+### Changed
+
+- The Jahia Store descriptor points at the jar on GitHub Packages, the location `mvn release:perform`
+  deploys to.
+
+### Security
+
+- The results embedded in the JSP pages for the export are escaped for a script element, so data from
+  the repository or the bundles cannot close it.
+
 ## [0.0.1] - 2026-10-18
 
 First version of the module, for Jahia 8.2.0.0 and later. The tools are listed in the Modules

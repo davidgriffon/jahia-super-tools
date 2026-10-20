@@ -3,7 +3,7 @@
  *
  * The UI test edits one value of the core settingsBean in memory and puts it back; nothing is persisted.
  */
-import {PAGES, byTestId, pickAutocompleteOption} from '../support/helpers';
+import {PAGES, byTestId, pickAutocompleteOption, captureExports, exportedText} from '../support/helpers';
 
 // A core bean with a plain setter-backed int, harmless to bump and restore. settingsBean itself is denied by the policy.
 const BEAN = 'ehCacheProvider';
@@ -174,6 +174,29 @@ describe('Spring bean editor', () => {
                 cy.get(byTestId('bean-result')).should('contain', 'Updated in memory');
                 beanValue().should('eq', initial);
             });
+        });
+
+        it('exports a bean as JSON, CSV and a Spring bean definition', () => {
+            captureExports();
+            cy.visit(PAGES.springBeanEditor);
+            pickAutocompleteOption('bean-context-input', 'Jahia core');
+            pickAutocompleteOption('bean-name-input', BEAN);
+            cy.get(byTestId('bean-name')).should('contain', BEAN);
+            cy.get(byTestId('bean-export')).click();
+            cy.get(byTestId('bean-export-json')).click();
+            exportedText(0).then(text => {
+                const document = JSON.parse(text);
+                expect(document.context.id).to.eq('core');
+                expect(document.bean.name).to.eq(BEAN);
+                expect(document.properties.map((property: {name: string}) => property.name)).to.include(PROPERTY);
+            });
+            cy.get(byTestId('bean-export')).click();
+            cy.get(byTestId('bean-export-csv')).click();
+            exportedText(1).should('contain', 'Property,Type,Value,Status').and('contain', `${PROPERTY},`);
+            cy.get(byTestId('bean-export')).click();
+            cy.get(byTestId('bean-export-xml')).click();
+            exportedText(2).should('contain', `<bean id="${BEAN}" class="org.jahia.services.cache.ehcache.EhCacheProvider">`)
+                .and('contain', `<property name="${PROPERTY}" value="`);
         });
 
         it('shows the persisted overrides of the core context', () => {

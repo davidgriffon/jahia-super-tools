@@ -5,7 +5,7 @@
  * Jahia. Flushing tests run last since they empty what the other tests rely on.
  */
 import gql from 'graphql-tag';
-import {CACHE_SEED_URL, PAGES, byTestId, cacheSize, pickSelectOption} from '../support/helpers';
+import {CACHE_SEED_URL, PAGES, byTestId, cacheSize, pickSelectOption, captureExports, exportedText} from '../support/helpers';
 
 const seedCache = () => {
     cy.clearCookies();
@@ -32,6 +32,28 @@ describe('Output cache browser', () => {
         cy.get(byTestId('cache-group-header')).should('contain', 'Site = systemsite');
         cy.get(byTestId('cache-entry-row')).should('have.length.greaterThan', 0);
         cy.get(byTestId('cache-entry-row')).should($rows => expect($rows.text()).to.contain('/sites/systemsite'));
+    });
+
+    it('exports every entry of the current group as CSV, JSON and XML', () => {
+        captureExports();
+        cy.visit(PAGES.cacheBrowser);
+        cy.get(byTestId('cache-group-header')).should('contain', 'Site = systemsite');
+        cy.get(byTestId('cache-entry-row')).should('have.length.greaterThan', 0);
+        cy.get(byTestId('cache-export')).click();
+        cy.get(byTestId('cache-export-csv')).click();
+        exportedText(0).should('contain', 'Key,Site,Language,Path').and('contain', ',systemsite:null,');
+        cy.get(byTestId('cache-export')).click();
+        cy.get(byTestId('cache-export-json')).click();
+        exportedText(1).then(text => {
+            const document = JSON.parse(text);
+            expect(document.filter.groupBy).to.eq('site');
+            expect(document.filter.filterValue).to.match(/^systemsite/);
+            expect(document.exportedEntries).to.eq(document.totalEntries);
+            expect(document.entries[0].parts.site).to.match(/^systemsite/);
+        });
+        cy.get(byTestId('cache-export')).click();
+        cy.get(byTestId('cache-export-xml')).click();
+        exportedText(2).should('contain', '<outputCache>').and('contain', '<entry>');
     });
 
     it('filters the keys with the search field', () => {
